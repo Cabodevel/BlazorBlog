@@ -1,6 +1,7 @@
 ﻿@page "/post/{BlogPostId:int}"
 @inject IMyBlogApi api
 @inject NavigationManager navman
+@using Markdig;
 
 @if (BlogPost != null)
 {
@@ -12,7 +13,7 @@
     <Meta name="twitter:card" content="@(new string(BlogPost.Text.Take(100).ToArray()))" />
     <h3>@BlogPost.Title</h3>
 
-    @((MarkupString)BlogPost.Text)
+   @((MarkupString)Markdig.Markdown.ToHtml(BlogPost.Text, pipeline))
 }
 
 @code {
@@ -25,5 +26,15 @@
     {
         BlogPost=await api.GetBlogPostAsync(BlogPostId);
         await base.OnParametersSetAsync();
+    }
+
+    MarkdownPipeline pipeline;
+
+    protected override Task OnInitializedAsync()
+    {
+        pipeline = new MarkdownPipelineBuilder()
+                 .UseEmojiAndSmiley()
+                 .Build();
+        return base.OnInitializedAsync();
     }
 }
