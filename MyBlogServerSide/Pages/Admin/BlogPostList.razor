@@ -1,5 +1,7 @@
 ﻿@page "/admin/blogposts"
 @inject IMyBlogApi api
+@attribute [Authorize]
+
 <a href="/admin/blogposts/new">New blog post</a>
 <ul>
     <Virtualize ItemsProvider="LoadPosts" Context="p">

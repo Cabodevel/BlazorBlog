@@ -1,12 +1,20 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using MyBlog.Data;
 using MyBlog.Data.Interfaces;
+using MyBlog.Data.Models;
+using MyBlogServerSide.Authentication;
 using MyBlogServerSide.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("MyBlogDB");
 
+builder.Services.AddDbContextFactory<MyBlogDbContext>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddDbContext<MyBlogDbContext>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+.AddEntityFrameworkStores<MyBlogDbContext>();
+builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppUser>>();
 
-builder.Services.AddDbContextFactory<MyBlogDbContext>(opt => opt.UseSqlite($"Data Source=../MyBlog.db"));
 builder.Services.AddScoped<IMyBlogApi, MyBlogApiServerSide>();
 
 // Add services to the container.
@@ -39,6 +47,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.UseStaticFiles();
 
